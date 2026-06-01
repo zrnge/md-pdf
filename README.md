@@ -1,66 +1,59 @@
-# md2pdf
+# MD to PDF Converter
 
-Convert Markdown files to styled PDF documents — preserving headings, tables, code blocks, blockquotes, lists, links, and more.
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+![Markdown](https://img.shields.io/badge/Markdown-000000?style=for-the-badge&logo=markdown&logoColor=white)
+![PDF](https://img.shields.io/badge/PDF-FF0000?style=for-the-badge&logo=adobeacrobatreader&logoColor=white)
+
+A beautiful, single-page Markdown to PDF converter with live preview, dark/light themes, and RTL support.
+
+**Live Demo:** [zrnge.github.io/md-pdf](https://zrnge.github.io/md-pdf/)
 
 ## Features
 
-- **Headings H1–H6** with visual separators and distinct typography
-- **Bold**, *italic*, ~~strikethrough~~, and `inline code`
-- **Fenced code blocks** with dark theme styling
-- **Blockquotes** with colored left border
-- **Tables** with dark header row and alternating row colors
-- **Nested bullet and numbered lists** (up to 4 levels)
-- **Hyperlinks** rendered as clickable underlined text
-- **Horizontal rules**
-- **Hard line breaks** (trailing two spaces)
-- **Page numbers** in the footer
-- **Letter or A4** paper size
+- Split view editor with live preview
+- Dark/Light theme toggle
+- RTL (Right-to-Left) language support
+- Advanced PDF customization
+- Local storage persistence
+- Export to PDF with one click
 
-## Requirements
+## Quick Start
 
-```
-pip install reportlab
-```
+1. Open `index.html` in your browser
+2. Write Markdown on the left
+3. See live preview on the right
+4. Click **Export PDF** to download
 
-## Usage
+## PDF Options
 
-```bash
-# Basic — outputs input.pdf
-python md2pdf.py input.md
+- Page sizes: A4, Letter, Legal, A3, A5
+- Custom margins
+- Font size & family
+- Headers & footers
+- Page numbers
+- Custom CSS
 
-# Custom output filename
-python md2pdf.py input.md -o report.pdf
+## Keyboard Shortcuts
 
-# A4 paper size
-python md2pdf.py input.md --a4
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl + S` | Save |
+| `Ctrl + P` | Export PDF |
 
-# Combine flags
-python md2pdf.py input.md -o report.pdf --a4
-```
+## Deploy to GitHub Pages
 
-## Output Preview
-
-| Markdown Element | PDF Rendering |
-|-----------------|---------------|
-| `# H1` | Large bold title with thick underline |
-| `## H2` | Bold with thin grey underline |
-| `### H3` | Bold-italic, muted color |
-| `` `code` `` | Red monospace on light background |
-| ```` ```block``` ```` | Dark terminal-style background |
-| `> blockquote` | Blue left border with light background |
-| `[text](url)` | Blue underlined clickable link |
-| Tables | Dark header, striped rows |
-
-## File Structure
-
-```
-md2pdf.py   — main script
-```
+1. Create repo named `md-pdf`
+2. Upload `index.html`
+3. Go to **Settings → Pages**
+4. Enable from `main` branch
+5. Visit `https://username.github.io/md-pdf/`
 
 ## Author
 
-[zrnge](https://github.com/zrnge)
+**Zrnge** - [GitHub](https://zrnge.github.io/md-pdf/)
 
-## License
+---
 
-MIT
+Made with ❤️ by Zrnge
