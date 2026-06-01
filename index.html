@@ -1,0 +1,1815 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MD to PDF Converter</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-light">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-dark" disabled>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.1/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f0f2f5;
+            --bg-tertiary: #e4e6eb;
+            --text-primary: #1c1e21;
+            --text-secondary: #65676b;
+            --border-color: #dadde1;
+            --accent-color: #1a73e8;
+            --accent-hover: #1557b0;
+            --accent-gradient: linear-gradient(135deg, #1a73e8 0%, #6c5ce7 100%);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+            --shadow-glow: 0 0 20px rgba(26, 115, 232, 0.15);
+            --editor-bg: #ffffff;
+            --preview-bg: #ffffff;
+            --panel-header-bg: #fafbfc;
+            --preview-text: #1c1e21;
+            --preview-heading: #1c1e21;
+            --preview-link: #1a73e8;
+            --preview-code-bg: #f6f8fa;
+            --preview-blockquote-border: #e1e4e8;
+            --preview-blockquote-bg: #f6f8fa;
+            --preview-table-border: #e1e4e8;
+            --preview-table-header-bg: #f6f8fa;
+            --preview-hr: #e1e4e8;
+            --success-color: #34c759;
+            --warning-color: #ff9500;
+            --danger-color: #ff3b30;
+            --border-radius-sm: 6px;
+            --border-radius-md: 10px;
+            --border-radius-lg: 16px;
+            --transition-fast: 0.15s ease;
+            --transition-normal: 0.25s ease;
+            --transition-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1a1b26;
+            --bg-secondary: #16161e;
+            --bg-tertiary: #24283b;
+            --text-primary: #c0caf5;
+            --text-secondary: #565f89;
+            --border-color: #3b4261;
+            --accent-color: #7aa2f7;
+            --accent-hover: #89b4fa;
+            --accent-gradient: linear-gradient(135deg, #7aa2f7 0%, #bb9af7 100%);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+            --shadow-glow: 0 0 20px rgba(122, 162, 247, 0.2);
+            --editor-bg: #1a1b26;
+            --preview-bg: #1a1b26;
+            --panel-header-bg: #16161e;
+            --preview-text: #c0caf5;
+            --preview-heading: #e0e6ff;
+            --preview-link: #7aa2f7;
+            --preview-code-bg: #24283b;
+            --preview-blockquote-border: #3b4261;
+            --preview-blockquote-bg: #1f2335;
+            --preview-table-border: #3b4261;
+            --preview-table-header-bg: #1f2335;
+            --preview-hr: #3b4261;
+            --success-color: #9ece6a;
+            --warning-color: #e0af68;
+            --danger-color: #f7768e;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        *:not(.toast):not(.toggle-switch)::after,
+        *:not(.toast):not(.toggle-switch)::before {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 24px;
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            z-index: 100;
+            transition: background-color 0.4s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .header:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-gradient);
+            border-radius: var(--border-radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            box-shadow: var(--shadow-md);
+            transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+        }
+
+        .logo-icon:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo-text h1 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+
+        .logo-text .author {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: var(--border-radius-md);
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 600;
+            font-family: inherit;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+        }
+
+        .btn:hover::before {
+            opacity: 1;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-primary {
+            background: var(--accent-gradient);
+            color: white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md), var(--shadow-glow);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0) scale(0.97);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+            border-color: var(--accent-color);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary:active {
+            transform: translateY(0) scale(0.97);
+        }
+
+        .btn-icon {
+            padding: 10px;
+            width: 40px;
+            height: 40px;
+            justify-content: center;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: var(--bg-tertiary);
+            border-radius: var(--border-radius-lg);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .toggle-container:hover {
+            border-color: var(--accent-color);
+            background: var(--bg-secondary);
+        }
+
+        .toggle-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            min-width: 30px;
+            transition: color var(--transition-fast);
+        }
+
+        .toggle-container:hover .toggle-label {
+            color: var(--text-primary);
+        }
+
+        .toggle-switch {
+            width: 48px;
+            height: 26px;
+            background: var(--bg-secondary);
+            border-radius: 13px;
+            position: relative;
+            cursor: pointer;
+            border: 2px solid var(--border-color);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: var(--accent-gradient);
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, width 0.2s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .toggle-switch:hover {
+            border-color: var(--accent-color);
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(22px);
+            box-shadow: 0 0 8px rgba(26, 115, 232, 0.4);
+        }
+
+        .toggle-switch.active {
+            border-color: var(--accent-color);
+            background: var(--bg-tertiary);
+        }
+
+        .toggle-switch:active::after {
+            width: 22px;
+        }
+
+        .toggle-switch.active:active::after {
+            width: 22px;
+            transform: translateX(18px);
+        }
+
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            background: var(--panel-header-bg);
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.4s ease, border-color 0.3s ease;
+        }
+
+        .panel-title {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-title i {
+            color: var(--accent-color);
+        }
+
+        .editor-panel {
+            border-right: 1px solid var(--border-color);
+            transition: border-color 0.3s ease;
+        }
+
+        [dir="rtl"] .editor-panel {
+            border-right: none;
+            border-left: 1px solid var(--border-color);
+        }
+
+        #markdown-editor {
+            flex: 1;
+            width: 100%;
+            padding: 20px;
+            border: none;
+            resize: none;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 14px;
+            line-height: 1.7;
+            background: var(--editor-bg);
+            color: var(--text-primary) !important;
+            outline: none;
+            transition: background var(--transition-normal), color var(--transition-normal);
+            tab-size: 4;
+            caret-color: var(--accent-color);
+        }
+
+        #markdown-editor::placeholder {
+            color: var(--text-secondary) !important;
+            opacity: 0.7;
+        }
+
+        #markdown-editor:focus {
+            background: var(--editor-bg);
+            color: var(--text-primary) !important;
+        }
+
+        #preview-panel {
+            flex: 1;
+            overflow: auto;
+            background: var(--preview-bg);
+            transition: background-color 0.4s ease;
+        }
+
+        #preview-content {
+            padding: 24px;
+            max-width: 800px;
+            margin: 0 auto;
+            color: var(--preview-text);
+            line-height: 1.7;
+            transition: color 0.3s ease;
+        }
+
+        #preview-content h1, #preview-content h2, #preview-content h3,
+        #preview-content h4, #preview-content h5, #preview-content h6 {
+            margin-top: 28px;
+            margin-bottom: 18px;
+            font-weight: 700;
+            line-height: 1.3;
+            color: var(--preview-heading);
+        }
+
+        #preview-content h1 {
+            font-size: 2.2em;
+            border-bottom: 3px solid var(--accent-gradient);
+            padding-bottom: 12px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        #preview-content h2 {
+            font-size: 1.6em;
+            border-bottom: 2px solid var(--preview-hr);
+            padding-bottom: 10px;
+        }
+
+        #preview-content h3 { font-size: 1.3em; }
+        #preview-content h4 { font-size: 1.1em; }
+
+        #preview-content p {
+            margin-bottom: 18px;
+            line-height: 1.8;
+        }
+
+        #preview-content ul, #preview-content ol {
+            margin-bottom: 18px;
+            padding-left: 28px;
+        }
+
+        [dir="rtl"] #preview-content ul,
+        [dir="rtl"] #preview-content ol {
+            padding-left: 0;
+            padding-right: 28px;
+        }
+
+        #preview-content li {
+            margin-bottom: 10px;
+            line-height: 1.7;
+        }
+
+        #preview-content code {
+            background: var(--preview-code-bg);
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.88em;
+            border: 1px solid var(--border-color);
+        }
+
+        #preview-content pre {
+            background: var(--preview-code-bg);
+            color: var(--preview-text);
+            padding: 18px;
+            border-radius: var(--border-radius-md);
+            overflow-x: auto;
+            margin-bottom: 18px;
+            border: 1px solid var(--border-color);
+        }
+
+        #preview-content pre code {
+            background: none;
+            padding: 0;
+            border: none;
+            color: inherit;
+        }
+
+        #preview-content blockquote {
+            border-left: 4px solid var(--accent-color);
+            margin: 18px 0;
+            padding: 14px 22px;
+            background: var(--preview-blockquote-bg);
+            border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        [dir="rtl"] #preview-content blockquote {
+            border-left: none;
+            border-right: 4px solid var(--accent-color);
+            border-radius: var(--border-radius-md) 0 0 var(--border-radius-md);
+        }
+
+        #preview-content table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 18px;
+            border-radius: var(--border-radius-md);
+            overflow: hidden;
+            border: 1px solid var(--preview-table-border);
+        }
+
+        #preview-content th, #preview-content td {
+            border: 1px solid var(--preview-table-border);
+            padding: 14px 16px;
+            text-align: left;
+        }
+
+        [dir="rtl"] #preview-content th,
+        [dir="rtl"] #preview-content td {
+            text-align: right;
+        }
+
+        #preview-content th {
+            background: var(--accent-gradient);
+            color: white;
+            font-weight: 600;
+        }
+
+        #preview-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow-md);
+        }
+
+        #preview-content a {
+            color: var(--preview-link);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color var(--transition-fast);
+        }
+
+        #preview-content a:hover {
+            text-decoration: underline;
+            color: var(--accent-hover);
+        }
+
+        #preview-content hr {
+            border: none;
+            height: 3px;
+            background: var(--accent-gradient);
+            margin: 28px 0;
+            border-radius: 2px;
+        }
+
+        /* Dark mode preview styles */
+        [data-theme="dark"] #preview-content code {
+            color: #c0caf5 !important;
+            background: #24283b !important;
+            border-color: #3b4261 !important;
+        }
+
+        [data-theme="dark"] #preview-content pre {
+            background: #1f2335 !important;
+            border-color: #3b4261 !important;
+        }
+
+        [data-theme="dark"] #preview-content pre code {
+            color: #c0caf5 !important;
+            background: transparent !important;
+        }
+
+        [data-theme="dark"] #preview-content blockquote {
+            color: #a9b1d6 !important;
+            background: #1f2335 !important;
+            border-color: #7aa2f7 !important;
+        }
+
+        [data-theme="dark"] #preview-content table {
+            border-color: #3b4261 !important;
+        }
+
+        [data-theme="dark"] #preview-content th,
+        [data-theme="dark"] #preview-content td {
+            border-color: #3b4261 !important;
+        }
+
+        [data-theme="dark"] #preview-content th {
+            background: #1f2335 !important;
+            color: #e0e6ff !important;
+        }
+
+        [data-theme="dark"] #preview-content td {
+            background: #1a1b26 !important;
+        }
+
+        [data-theme="dark"] #preview-content img {
+            opacity: 0.9;
+        }
+
+        [data-theme="dark"] #preview-content a {
+            color: #7aa2f7 !important;
+        }
+
+        [data-theme="dark"] #preview-content hr {
+            background: linear-gradient(135deg, #7aa2f7 0%, #bb9af7 100%) !important;
+        }
+
+        .resizer {
+            width: 6px;
+            background: var(--border-color);
+            cursor: col-resize;
+            transition: background var(--transition-fast);
+            position: relative;
+        }
+
+        [dir="rtl"] .resizer {
+            cursor: col-resize;
+        }
+
+        .resizer:hover, .resizer:active {
+            background: var(--accent-color);
+        }
+
+        .resizer::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 4px;
+            height: 40px;
+            background: var(--text-secondary);
+            border-radius: 2px;
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+        }
+
+        .resizer:hover::after {
+            opacity: 0.5;
+        }
+
+        .settings-panel {
+            position: fixed;
+            top: 0;
+            right: -420px;
+            width: 420px;
+            height: 100vh;
+            background: var(--bg-primary);
+            border-left: 1px solid var(--border-color);
+            box-shadow: var(--shadow-lg);
+            transition: right var(--transition-slow), background-color 0.4s ease, border-color 0.3s ease;
+            z-index: 200;
+            overflow-y: auto;
+        }
+
+        [dir="rtl"] .settings-panel {
+            right: auto;
+            left: -420px;
+            border-left: none;
+            border-right: 1px solid var(--border-color);
+        }
+
+        [dir="rtl"] .settings-panel.open {
+            left: 0;
+        }
+
+        .settings-panel.open {
+            right: 0;
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--panel-header-bg);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            transition: background-color 0.4s ease, border-color 0.3s ease;
+        }
+
+        .settings-header h2 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .settings-header h2 i {
+            color: var(--accent-color);
+        }
+
+        .close-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: var(--bg-tertiary);
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            font-size: 1.3rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+        }
+
+        .close-btn:hover {
+            background: var(--danger-color);
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        .settings-content {
+            padding: 24px;
+        }
+
+        .setting-group {
+            margin-bottom: 28px;
+        }
+
+        .setting-group h3 {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .setting-group h3 i {
+            font-size: 0.9rem;
+        }
+
+        .setting-row {
+            display: flex;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+
+        .setting-item {
+            flex: 1;
+        }
+
+        .setting-item label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .setting-item input,
+        .setting-item select,
+        .setting-item textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+            font-size: 0.9rem;
+            font-family: inherit;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .setting-item input:focus,
+        .setting-item select:focus,
+        .setting-item textarea:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+        }
+
+        .setting-item textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 10px 14px;
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius-sm);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: border-color 0.3s ease, background-color 0.3s ease;
+        }
+
+        .checkbox-item:hover {
+            border-color: var(--accent-color);
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent-color);
+            cursor: pointer;
+        }
+
+        .checkbox-item label {
+            margin: 0;
+            font-size: 0.9rem;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            z-index: 150;
+        }
+
+        .overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .word-count {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            padding: 6px 12px;
+            background: var(--bg-tertiary);
+            border-radius: var(--border-radius-sm);
+            font-weight: 500;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .credit-bar {
+            text-align: center;
+            padding: 14px 20px;
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+            margin-top: 20px;
+            background: var(--panel-header-bg);
+            transition: background-color 0.4s ease, border-color 0.3s ease, color 0.3s ease;
+        }
+
+        .credit-bar strong {
+            color: var(--accent-color);
+        }
+
+        .credit-bar a {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color var(--transition-fast);
+        }
+
+        .credit-bar a:hover {
+            color: var(--accent-hover);
+            text-decoration: underline;
+        }
+
+        @media (max-width: 900px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .editor-panel {
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            [dir="rtl"] .editor-panel {
+                border-left: none;
+            }
+
+            .resizer {
+                width: 100%;
+                height: 6px;
+                cursor: row-resize;
+            }
+
+            .settings-panel {
+                width: 100%;
+                right: -100%;
+            }
+
+            [dir="rtl"] .settings-panel {
+                left: -100%;
+            }
+
+            .logo-text h1 {
+                font-size: 1.1rem;
+            }
+
+            .toggle-label {
+                display: none;
+            }
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-color);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes ripple {
+            to { transform: scale(4); opacity: 0; }
+        }
+
+        .btn-primary:active {
+            animation: pulse 0.2s ease;
+        }
+
+        /* Button loading state */
+        .btn.loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        /* Toast notifications */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 14px 20px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow-lg);
+            border-left: 4px solid var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            z-index: 9999;
+            transform: translateX(120%);
+            transition: transform var(--transition-normal);
+            max-width: 350px;
+        }
+
+        [dir="rtl"] .toast {
+            right: auto;
+            left: 24px;
+            border-left: none;
+            border-right: 4px solid var(--accent-color);
+            transform: translateX(-120%);
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            border-color: var(--success-color);
+        }
+
+        .toast.error {
+            border-color: var(--danger-color);
+        }
+
+        .toast.warning {
+            border-color: var(--warning-color);
+        }
+
+        .toast-icon {
+            font-size: 1.2rem;
+        }
+
+        .toast.success .toast-icon { color: var(--success-color); }
+        .toast.error .toast-icon { color: var(--danger-color); }
+        .toast.warning .toast-icon { color: var(--warning-color); }
+
+        .btn.loading::after {
+            content: '';
+            width: 14px;
+            height: 14px;
+            border: 2px solid transparent;
+            border-top-color: currentColor;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Tooltip */
+        [data-tooltip] {
+            position: relative;
+        }
+
+        [data-tooltip]::before {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%) translateY(4px);
+            padding: 6px 12px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 0.75rem;
+            font-weight: 500;
+            border-radius: 6px;
+            white-space: nowrap;
+            box-shadow: var(--shadow-md);
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition-fast);
+            z-index: 1000;
+            border: 1px solid var(--border-color);
+        }
+
+        [data-tooltip]:hover::before {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <i class="fas fa-file-pdf"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>MD to PDF</h1>
+                    <span class="author">by <strong>Zrnge</strong></span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <span class="word-count" id="word-count">
+                    <i class="fas fa-font"></i> 0 words
+                </span>
+                <div class="toggle-container" data-tooltip="Toggle text direction">
+                    <span class="toggle-label">LTR</span>
+                    <div class="toggle-switch" id="rtl-toggle"></div>
+                    <span class="toggle-label">RTL</span>
+                </div>
+                <div class="toggle-container" data-tooltip="Toggle dark/light theme">
+                    <span class="toggle-label"><i class="fas fa-sun"></i></span>
+                    <div class="toggle-switch" id="theme-toggle"></div>
+                    <span class="toggle-label"><i class="fas fa-moon"></i></span>
+                </div>
+                <a href="https://zrnge.github.io/md-pdf/" target="_blank" class="btn btn-secondary btn-icon" data-tooltip="View on GitHub">
+                    <i class="fab fa-github"></i>
+                </a>
+                <button class="btn btn-secondary" id="settings-btn" data-tooltip="PDF Settings">
+                    <i class="fas fa-cog"></i> Settings
+                </button>
+                <button class="btn btn-primary" id="export-btn" data-tooltip="Export as PDF">
+                    <i class="fas fa-download"></i> Export PDF
+                </button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="panel editor-panel">
+                <div class="panel-header">
+                    <span class="panel-title">
+                        <i class="fas fa-edit"></i> Markdown Editor
+                    </span>
+                    <button class="btn btn-danger" id="clear-btn" style="padding: 6px 12px; font-size: 0.8rem;">
+                        <i class="fas fa-trash"></i> Clear
+                    </button>
+                </div>
+                <textarea id="markdown-editor" placeholder="Write your Markdown here...&#10;&#10;# Heading&#10;&#10;**Bold text** and *italic text*&#10;&#10;- List item 1&#10;- List item 2&#10;&#10;```code block```"></textarea>
+            </div>
+
+            <div class="resizer" id="resizer"></div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title">
+                        <i class="fas fa-eye"></i> Preview
+                    </span>
+                </div>
+                <div id="preview-panel">
+                    <div id="preview-content"></div>
+                    <div class="credit-bar">
+                        Created by <strong>Zrnge</strong> | <a href="https://zrnge.github.io/md-pdf/" target="_blank">zrnge.github.io/md-pdf</a>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+
+    <aside class="settings-panel" id="settings-panel">
+        <div class="settings-header">
+            <h2><i class="fas fa-cog"></i> PDF Settings</h2>
+            <button class="close-btn" id="close-settings">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="settings-content">
+            <div class="setting-group">
+                <h3>Page Layout</h3>
+                <div class="setting-row">
+                    <div class="setting-item">
+                        <label for="page-size">Page Size</label>
+                        <select id="page-size">
+                            <option value="a4">A4</option>
+                            <option value="letter">Letter</option>
+                            <option value="legal">Legal</option>
+                            <option value="a3">A3</option>
+                            <option value="a5">A5</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label for="orientation">Orientation</label>
+                        <select id="orientation">
+                            <option value="portrait">Portrait</option>
+                            <option value="landscape">Landscape</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <h3>Margins (mm)</h3>
+                <div class="setting-row">
+                    <div class="setting-item">
+                        <label for="margin-top">Top</label>
+                        <input type="number" id="margin-top" value="20" min="0" max="100">
+                    </div>
+                    <div class="setting-item">
+                        <label for="margin-right">Right</label>
+                        <input type="number" id="margin-right" value="15" min="0" max="100">
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-item">
+                        <label for="margin-bottom">Bottom</label>
+                        <input type="number" id="margin-bottom" value="20" min="0" max="100">
+                    </div>
+                    <div class="setting-item">
+                        <label for="margin-left">Left</label>
+                        <input type="number" id="margin-left" value="15" min="0" max="100">
+                    </div>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <h3>Typography</h3>
+                <div class="setting-row">
+                    <div class="setting-item">
+                        <label for="font-size">Font Size (px)</label>
+                        <input type="number" id="font-size" value="12" min="8" max="24">
+                    </div>
+                    <div class="setting-item">
+                        <label for="font-family">Font Family</label>
+                        <select id="font-family">
+                            <option value="Arial, sans-serif">Arial</option>
+                            <option value="'Times New Roman', serif">Times New Roman</option>
+                            <option value="'Courier New', monospace">Courier New</option>
+                            <option value="Georgia, serif">Georgia</option>
+                            <option value="Verdana, sans-serif">Verdana</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <h3>Header & Footer</h3>
+                <div class="setting-item">
+                    <label for="header-text">Header Text</label>
+                    <input type="text" id="header-text" placeholder="Optional header text">
+                </div>
+                <div class="setting-item" style="margin-top: 12px;">
+                    <label for="footer-text">Footer Text</label>
+                    <input type="text" id="footer-text" placeholder="Optional footer text">
+                </div>
+                <div class="checkbox-item" style="margin-top: 12px;">
+                    <input type="checkbox" id="show-page-numbers" checked>
+                    <label for="show-page-numbers">Show page numbers</label>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-item">
+                        <label for="page-number-position">Page Numbers Position</label>
+                        <select id="page-number-position">
+                            <option value="bottom-center">Bottom Center</option>
+                            <option value="bottom-left">Bottom Left</option>
+                            <option value="bottom-right">Bottom Right</option>
+                            <option value="top-center">Top Center</option>
+                            <option value="top-left">Top Left</option>
+                            <option value="top-right">Top Right</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <h3>Custom CSS (for PDF)</h3>
+                <div class="setting-item">
+                    <textarea id="custom-css" placeholder="Add custom CSS styles for PDF output..."></textarea>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" style="width: 100%;" id="apply-settings">Apply Settings</button>
+        </div>
+    </aside>
+
+    <script>
+        // Default markdown content
+        const defaultMarkdown = `# Welcome to MD to PDF Converter
+
+## Features
+
+- **Real-time preview** as you type
+- **Advanced PDF options** with custom settings
+- **Dark/Light theme** toggle
+- **Export to PDF** with one click
+
+## Markdown Support
+
+### Text Formatting
+
+You can use **bold**, *italic*, and \`inline code\` formatting.
+
+### Code Blocks
+
+\`\`\`javascript
+function greet(name) {
+    console.log(\`Hello, \${name}!\`);
+}
+\`\`\`
+
+### Lists
+
+1. First item
+2. Second item
+3. Third item
+
+- Unordered item
+- Another item
+- One more item
+
+### Blockquotes
+
+> "The only way to do great work is to love what you do."
+> — Steve Jobs
+
+### Tables
+
+| Feature | Status |
+|---------|--------|
+| Markdown Parsing | ✅ |
+| PDF Export | ✅ |
+| Theme Toggle | ✅ |
+| Custom Settings | ✅ |
+
+### Links & Images
+
+[Visit GitHub](https://github.com)
+
+---
+
+**Enjoy writing your documents!**
+`;
+
+        // DOM Elements
+        const editor = document.getElementById('markdown-editor');
+        const previewContent = document.getElementById('preview-content');
+        const themeToggle = document.getElementById('theme-toggle');
+        const rtlToggle = document.getElementById('rtl-toggle');
+        const settingsBtn = document.getElementById('settings-btn');
+        const settingsPanel = document.getElementById('settings-panel');
+        const closeSettingsBtn = document.getElementById('close-settings');
+        const overlay = document.getElementById('overlay');
+        const exportBtn = document.getElementById('export-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        const resizer = document.getElementById('resizer');
+        const wordCount = document.getElementById('word-count');
+
+        // Settings elements
+        const pageSize = document.getElementById('page-size');
+        const orientation = document.getElementById('orientation');
+        const marginTop = document.getElementById('margin-top');
+        const marginRight = document.getElementById('margin-right');
+        const marginBottom = document.getElementById('margin-bottom');
+        const marginLeft = document.getElementById('margin-left');
+        const fontSize = document.getElementById('font-size');
+        const fontFamily = document.getElementById('font-family');
+        const headerText = document.getElementById('header-text');
+        const footerText = document.getElementById('footer-text');
+        const showPageNumbers = document.getElementById('show-page-numbers');
+        const pageNumberPosition = document.getElementById('page-number-position');
+        const customCSS = document.getElementById('custom-css');
+        const applySettingsBtn = document.getElementById('apply-settings');
+
+        // Initialize marked with highlight.js
+        marked.setOptions({
+            highlight: function(code, lang) {
+                if (lang && hljs.getLanguage(lang)) {
+                    return hljs.highlight(code, { language: lang }).value;
+                }
+                return hljs.highlightAuto(code).value;
+            },
+            breaks: true,
+            gfm: true
+        });
+
+        // Load saved content from localStorage
+        function loadSavedContent() {
+            const saved = localStorage.getItem('md-pdf-content');
+            if (saved) {
+                editor.value = saved;
+            } else {
+                editor.value = defaultMarkdown;
+            }
+            updatePreview();
+        }
+
+        // Save content to localStorage
+        function saveContent() {
+            localStorage.setItem('md-pdf-content', editor.value);
+        }
+
+        // Update preview
+        function updatePreview() {
+            const markdown = editor.value;
+            previewContent.innerHTML = marked.parse(markdown);
+            updateWordCount();
+            saveContent();
+        }
+
+        // Update word count
+        function updateWordCount() {
+            const text = editor.value.trim();
+            const words = text ? text.split(/\s+/).length : 0;
+            wordCount.textContent = `${words} word${words !== 1 ? 's' : ''}`;
+        }
+
+        // Theme toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('md-pdf-theme', newTheme);
+
+            // Update toggle switch visual state
+            themeToggle.classList.toggle('active', newTheme === 'dark');
+
+            // Toggle highlight.js theme
+            const hljsLight = document.getElementById('hljs-light');
+            const hljsDark = document.getElementById('hljs-dark');
+            if (newTheme === 'dark') {
+                hljsLight.disabled = true;
+                hljsDark.disabled = false;
+            } else {
+                hljsLight.disabled = false;
+                hljsDark.disabled = true;
+            }
+
+            // Force re-render of preview content to apply new styles
+            requestAnimationFrame(() => {
+                updatePreview();
+            });
+
+            showToast(`Switched to ${newTheme === 'dark' ? 'Dark' : 'Light'} mode`, 'success');
+        }
+
+        // Load saved theme
+        function loadSavedTheme() {
+            const savedTheme = localStorage.getItem('md-pdf-theme');
+            if (savedTheme) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                themeToggle.classList.toggle('active', savedTheme === 'dark');
+
+                // Apply correct highlight.js theme
+                const hljsLight = document.getElementById('hljs-light');
+                const hljsDark = document.getElementById('hljs-dark');
+                if (savedTheme === 'dark') {
+                    hljsLight.disabled = true;
+                    hljsDark.disabled = false;
+                } else {
+                    hljsLight.disabled = false;
+                    hljsDark.disabled = true;
+                }
+
+                // Force re-render after theme is applied
+                requestAnimationFrame(() => {
+                    updatePreview();
+                });
+            }
+        }
+
+        // Toggle text direction (LTR/RTL)
+        function toggleRTL() {
+            const html = document.documentElement;
+            const currentDir = html.getAttribute('dir');
+            const newDir = currentDir === 'ltr' ? 'rtl' : 'ltr';
+            html.setAttribute('dir', newDir);
+            html.setAttribute('lang', newDir === 'rtl' ? 'ar' : 'en');
+            localStorage.setItem('md-pdf-dir', newDir);
+
+            // Update toggle switch visual state
+            rtlToggle.classList.toggle('active', newDir === 'rtl');
+
+            // Update editor placeholder based on direction
+            if (newDir === 'rtl') {
+                editor.placeholder = 'اكتب صيغة Markdown هنا...';
+            } else {
+                editor.placeholder = 'Write your Markdown here...\n\n# Heading\n\n**Bold text** and *italic text*\n\n- List item 1\n- List item 2\n\n```code block```';
+            }
+
+            showToast(`Switched to ${newDir.toUpperCase()} direction`, 'success');
+        }
+
+        // Load saved text direction
+        function loadSavedDirection() {
+            const savedDir = localStorage.getItem('md-pdf-dir');
+            if (savedDir) {
+                document.documentElement.setAttribute('dir', savedDir);
+                document.documentElement.setAttribute('lang', savedDir === 'rtl' ? 'ar' : 'en');
+                rtlToggle.classList.toggle('active', savedDir === 'rtl');
+                if (savedDir === 'rtl') {
+                    editor.placeholder = 'اكتب صيغة Markdown هنا...';
+                }
+            }
+        }
+
+        // Settings panel
+        function openSettings() {
+            settingsPanel.classList.add('open');
+            overlay.classList.add('visible');
+        }
+
+        function closeSettings() {
+            settingsPanel.classList.remove('open');
+            overlay.classList.remove('visible');
+        }
+
+        // Export to PDF
+        function exportToPDF() {
+            const element = document.createElement('div');
+            element.innerHTML = marked.parse(editor.value);
+
+            // Get current text direction
+            const currentDir = document.documentElement.getAttribute('dir') || 'ltr';
+            element.setAttribute('dir', currentDir);
+            element.setAttribute('lang', currentDir === 'rtl' ? 'ar' : 'en');
+
+            // Apply comprehensive styles to match preview
+            const baseStyles = `
+                font-family: ${fontFamily.value};
+                font-size: ${fontSize.value}px;
+                line-height: 1.6;
+                color: #1a1a1a;
+                padding: 20px;
+                max-width: 800px;
+                margin: 0 auto;
+                direction: ${currentDir};
+            `;
+
+            const contentStyles = `
+                h1, h2, h3, h4, h5, h6 {
+                    margin-top: 24px;
+                    margin-bottom: 16px;
+                    font-weight: 600;
+                    line-height: 1.3;
+                    color: #1a1a1a;
+                }
+                h1 { font-size: 2em; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+                h2 { font-size: 1.5em; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+                h3 { font-size: 1.25em; }
+                h4 { font-size: 1em; }
+                p { margin-bottom: 16px; line-height: 1.7; }
+                ul, ol { margin-bottom: 16px; padding-left: 30px; }
+                li { margin-bottom: 8px; line-height: 1.6; }
+                code {
+                    background: #f4f4f4;
+                    padding: 2px 6px;
+                    border-radius: 3px;
+                    font-family: 'Consolas', monospace;
+                    font-size: 0.9em;
+                }
+                pre {
+                    background: #282c34;
+                    color: #abb2bf;
+                    padding: 16px;
+                    border-radius: 6px;
+                    overflow-x: auto;
+                    margin-bottom: 16px;
+                }
+                pre code { background: none; padding: 0; color: inherit; }
+                blockquote {
+                    border-left: 4px solid #ddd;
+                    margin: 16px 0;
+                    padding: 10px 20px;
+                    background: #f9f9f9;
+                    color: #666;
+                }
+                table { border-collapse: collapse; width: 100%; margin-bottom: 16px; }
+                th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+                th { background: #f5f5f5; font-weight: 600; }
+                img { max-width: 100%; height: auto; border-radius: 4px; }
+                a { color: #2563eb; text-decoration: none; }
+                hr { border: none; border-top: 2px solid #eee; margin: 24px 0; }
+            `;
+
+            // RTL-specific styles
+            const rtlStyles = currentDir === 'rtl' ? `
+                ul, ol { padding-left: 0; padding-right: 30px; }
+                blockquote { border-left: none; border-right: 4px solid #ddd; }
+                th, td { text-align: right; }
+            ` : '';
+
+            element.style.cssText = baseStyles;
+
+            // Add content styles
+            const styleElement = document.createElement('style');
+            styleElement.textContent = contentStyles + rtlStyles;
+            element.insertBefore(styleElement, element.firstChild);
+
+            // Add custom CSS
+            if (customCSS.value) {
+                const customStyle = document.createElement('style');
+                customStyle.textContent = customCSS.value;
+                element.appendChild(customStyle);
+            }
+
+            // Configure PDF options
+            const options = {
+                margin: [
+                    parseInt(marginTop.value),
+                    parseInt(marginRight.value),
+                    parseInt(marginBottom.value),
+                    parseInt(marginLeft.value)
+                ],
+                filename: 'document.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: {
+                    unit: 'mm',
+                    format: pageSize.value,
+                    orientation: orientation.value
+                },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+
+            // Add header/footer
+            options.headerTemplate = generateHeaderTemplate();
+            options.footerTemplate = generateFooterTemplate();
+
+            // Show loading state
+            exportBtn.classList.add('loading');
+            exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting...';
+
+            html2pdf().set(options).from(element).save().then(() => {
+                // Show success state
+                exportBtn.classList.remove('loading');
+                exportBtn.innerHTML = '<i class="fas fa-check"></i> Done!';
+                showToast('PDF exported successfully!', 'success');
+                setTimeout(() => {
+                    exportBtn.innerHTML = '<i class="fas fa-download"></i> Export PDF';
+                }, 2000);
+            }).catch((error) => {
+                // Show error state
+                exportBtn.classList.remove('loading');
+                exportBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+                showToast('Failed to export PDF. Please try again.', 'error');
+                setTimeout(() => {
+                    exportBtn.innerHTML = '<i class="fas fa-download"></i> Export PDF';
+                }, 2000);
+                console.error('PDF export error:', error);
+            });
+        }
+
+        // Generate header template
+        function generateHeaderTemplate() {
+            const currentDir = document.documentElement.getAttribute('dir') || 'ltr';
+            let headerContent = headerText.value || '';
+            if (headerContent) {
+                return `<div style="width: 100%; text-align: center; padding: 10px 20px; font-size: 10px; color: #666; direction: ${currentDir};">${headerContent}</div>`;
+            }
+            return '<div></div>';
+        }
+
+        // Generate footer template
+        function generateFooterTemplate() {
+            const pos = pageNumberPosition.value;
+            const isTop = pos.startsWith('top');
+            const align = pos.includes('left') ? 'left' : pos.includes('right') ? 'right' : 'center';
+            const currentDir = document.documentElement.getAttribute('dir') || 'ltr';
+
+            let content = '';
+            if (footerText.value) {
+                content += `<span style="font-size: 10px; color: #666;">${footerText.value}</span>`;
+            }
+            if (showPageNumbers.checked) {
+                content += `<span class="${isTop ? 'title' : 'pageNumber'}" style="font-size: 10px; margin-${align === 'center' ? '0' : align === 'left' ? 'right' : 'left'}: 10px;"></span>`;
+            }
+
+            // Always add author and GitHub link
+            const authorInfo = `<span style="font-size: 9px; color: #999; margin-${currentDir === 'rtl' ? 'right' : 'left'}: 10px;">Created by Zrnge | zrnge.github.io/md-pdf</span>`;
+
+            return `<div style="width: 100%; text-align: ${align}; padding: 10px 20px; font-size: 10px; display: flex; justify-content: space-between; align-items: center; direction: ${currentDir};">
+                <div>${content}</div>
+                <div>${authorInfo}</div>
+            </div>`;
+        }
+
+        // Clear editor
+        function clearEditor() {
+            if (editor.value.trim() === '') {
+                showToast('Editor is already empty', 'warning');
+                return;
+            }
+            if (confirm('Are you sure you want to clear the editor? This cannot be undone.')) {
+                editor.value = '';
+                updatePreview();
+                showToast('Editor cleared', 'success');
+            }
+        }
+
+        // Toast notification system
+        function showToast(message, type = 'info') {
+            // Remove existing toast
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+
+            // Create toast element
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            // Set icon based on type
+            let icon = 'fa-info-circle';
+            if (type === 'success') icon = 'fa-check-circle';
+            else if (type === 'error') icon = 'fa-exclamation-circle';
+            else if (type === 'warning') icon = 'fa-exclamation-triangle';
+            
+            toast.innerHTML = `
+                <i class="fas ${icon} toast-icon"></i>
+                <span>${message}</span>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // Show toast
+            setTimeout(() => toast.classList.add('show'), 10);
+            
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Ripple effect for buttons
+        function createRipple(event) {
+            const button = event.currentTarget;
+            const ripple = document.createElement('span');
+            const rect = button.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = event.clientX - rect.left - size / 2;
+            const y = event.clientY - rect.top - size / 2;
+
+            ripple.style.cssText = `
+                position: absolute;
+                width: ${size}px;
+                height: ${size}px;
+                left: ${x}px;
+                top: ${y}px;
+                background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 70%);
+                border-radius: 50%;
+                transform: scale(0);
+                animation: ripple 0.6s linear;
+                pointer-events: none;
+            `;
+
+            button.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
+        }
+
+        // Add ripple effect to all buttons
+        document.querySelectorAll('.btn').forEach(button => {
+            button.addEventListener('click', createRipple);
+        });
+
+        // Resizer functionality
+        function initResizer() {
+            let isResizing = false;
+
+            resizer.addEventListener('mousedown', (e) => {
+                isResizing = true;
+                document.body.style.cursor = 'col-resize';
+                document.body.style.userSelect = 'none';
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isResizing) return;
+
+                const container = document.querySelector('.main-content');
+                const editorPanel = document.querySelector('.editor-panel');
+                const containerRect = container.getBoundingClientRect();
+                const percentage = ((e.clientX - containerRect.left) / containerRect.width) * 100;
+
+                if (percentage > 20 && percentage < 80) {
+                    editorPanel.style.flex = `0 0 ${percentage}%`;
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                isResizing = false;
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            });
+        }
+
+        // Event listeners
+        editor.addEventListener('input', updatePreview);
+        themeToggle.addEventListener('click', toggleTheme);
+        rtlToggle.addEventListener('click', toggleRTL);
+        settingsBtn.addEventListener('click', openSettings);
+        closeSettingsBtn.addEventListener('click', closeSettings);
+        overlay.addEventListener('click', closeSettings);
+        exportBtn.addEventListener('click', exportToPDF);
+        clearBtn.addEventListener('click', clearEditor);
+        applySettingsBtn.addEventListener('click', () => {
+            closeSettings();
+            showToast('Settings applied!', 'success');
+        });
+
+        // Initialize
+        loadSavedTheme();
+        loadSavedDirection();
+        loadSavedContent();
+        initResizer();
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                if (e.key === 's') {
+                    e.preventDefault();
+                    saveContent();
+                    showToast('Content saved!', 'success');
+                } else if (e.key === 'p') {
+                    e.preventDefault();
+                    exportToPDF();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
